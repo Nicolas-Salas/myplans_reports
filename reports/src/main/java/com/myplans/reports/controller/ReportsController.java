@@ -4,8 +4,6 @@ import com.myplans.reports.client.CoreClient;
 import com.myplans.reports.dto.PlanoDTO;
 import com.myplans.reports.service.ReportsService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
@@ -13,10 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/reportes")
@@ -28,23 +23,17 @@ public class ReportsController {
     private final CoreClient coreClient;
 
     @GetMapping("/plano/{idPlano}/excel")
-    @PreAuthorize("hasAnyRole('SUPERVISOR', 'ADMIN')")
-    @Operation(summary = "Exportar matriz del plano + historial completo a Excel",
-            description = "Genera un .xlsx con dos hojas: matriz de TAGs y historial de cambios. " +
-                    "Solo disponible si el plano está en estado CERRADO (RF-25).")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Archivo Excel generado"),
-            @ApiResponse(responseCode = "400", description = "El plano no está en estado CERRADO"),
-            @ApiResponse(responseCode = "401", description = "Token ausente o inválido"),
-            @ApiResponse(responseCode = "403", description = "Solo SUPERVISOR y ADMIN pueden exportar"),
-            @ApiResponse(responseCode = "404", description = "Plano no encontrado"),
-            @ApiResponse(responseCode = "502", description = "Core o Audit no disponibles")
-    })
-    public ResponseEntity<ByteArrayResource> exportarPlanoExcel(@PathVariable Integer idPlano) {
-        byte[] xlsx = reportService.generarReporteExcel(idPlano);
+    @PreAuthorize("hasAnyRole('AUDITOR', 'ADMIN')")
+    @Operation(summary = "Exportar Planilla de Amarillado a Excel",
+               description = "Genera el .xlsx con el formato oficial de la Planilla de Amarillado. " +
+                             "Solo disponible si el plano está en estado CERRADO.")
+    public ResponseEntity<ByteArrayResource> exportarPlanoExcel(
+            @PathVariable Integer idPlano,
+            @RequestParam String statusExport,
+            @RequestParam(required = false, defaultValue = "") String observaciones) {
 
-        // Buscar nombre del archivo (segunda llamada al Core, pero ya está cacheada por la primera del service;
-        // si quieres optimizar, se puede modificar el service para que devuelva también el plano)
+        byte[] xlsx = reportService.generarReporteExcel(idPlano, statusExport, observaciones);
+
         PlanoDTO plano = coreClient.getPlano(idPlano);
         String filename = reportService.buildFilename(idPlano, plano);
 

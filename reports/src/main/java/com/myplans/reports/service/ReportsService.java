@@ -1,6 +1,7 @@
 package com.myplans.reports.service;
 
 import com.myplans.reports.client.AuditClient;
+import com.myplans.reports.client.AuthClient;
 import com.myplans.reports.client.CoreClient;
 import com.myplans.reports.dto.HistorialDTO;
 import com.myplans.reports.dto.PlanoDTO;
@@ -27,9 +28,10 @@ public class ReportsService {
 
     private final CoreClient coreClient;
     private final AuditClient auditClient;
+    private final AuthClient authClient;
     private final ExcelReportsGenerator excelGenerator;
 
-    public byte[] generarReporteExcel(Integer idPlano) {
+    public byte[] generarReporteExcel(Integer idPlano, String statusExport, String observaciones) {
         log.info("Generando reporte Excel del plano idPlano={}", idPlano);
 
         PlanoDTO plano = coreClient.getPlano(idPlano);
@@ -37,7 +39,7 @@ public class ReportsService {
         if (plano.status() == null || !ESTADO_CERRADO.equalsIgnoreCase(plano.status())) {
             throw new BusinessException(
                     "Solo se pueden exportar planos en estado CERRADO. " +
-                            "Estado actual del plano " + idPlano + ": " + plano.status());
+                    "Estado actual del plano " + idPlano + ": " + plano.status());
         }
 
         List<TagDTO> tags = coreClient.getTagsByPlano(idPlano);
@@ -45,15 +47,15 @@ public class ReportsService {
 
         Map<Integer, List<HistorialDTO>> historialPorTag = new HashMap<>();
         for (TagDTO tag : tags) {
-            List<HistorialDTO> historial = auditClient.getHistorialPorTag(tag.idTag());
-            historialPorTag.put(tag.idTag(), historial);
+            historialPorTag.put(tag.idTag(), auditClient.getHistorialPorTag(tag.idTag()));
         }
 
+        Map<Integer, String> userNames = authClient.getUserNames();
+
         try {
-            byte[] xlsx = excelGenerator.generate(plano, tags, historialPorTag);
-            log.info("Reporte del plano {} generado: {} bytes, {} TAGs, {} eventos",
-                    idPlano, xlsx.length, tags.size(),
-                    historialPorTag.values().stream().mapToInt(List::size).sum());
+            byte[] xlsx = excelGenerator.generate(plano, tags, historialPorTag,
+                                                   statusExport, observaciones, userNames);
+            log.info("Reporte del plano {} generado: {} bytes, {} TAGs", idPlano, xlsx.length, tags.size());
             return xlsx;
         } catch (IOException ex) {
             log.error("Error generando archivo Excel del plano {}", idPlano, ex);
