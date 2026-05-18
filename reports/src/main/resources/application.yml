@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: myplans-reports-service
+
+server:
+  port: ${SERVER_PORT:8083}
+
+jwt:
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+
+reports:
+  core:
+    uri: ${CORE_SERVICE_URI:http://localhost:8081}
+    internal-token: ${CORE_INTERNAL_TOKEN:dev-internal-token-please-change-in-prod}
+    timeout-ms: ${CORE_TIMEOUT_MS:5000}
+  audit:
+    uri: ${AUDIT_SERVICE_URI:http://localhost:8082}
+    internal-token: ${AUDIT_INTERNAL_TOKEN:dev-internal-token-please-change-in-prod}
+    timeout-ms: ${AUDIT_TIMEOUT_MS:5000}
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: never
