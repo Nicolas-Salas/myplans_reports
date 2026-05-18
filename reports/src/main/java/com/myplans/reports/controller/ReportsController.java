@@ -42,9 +42,6 @@ public class ReportsController {
     })
     public ResponseEntity<ByteArrayResource> exportarPlanoExcel(@PathVariable Integer idPlano) {
         byte[] xlsx = reportService.generarReporteExcel(idPlano);
-
-        // Buscar nombre del archivo (segunda llamada al Core, pero ya está cacheada por la primera del service;
-        // si quieres optimizar, se puede modificar el service para que devuelva también el plano)
         PlanoDTO plano = coreClient.getPlano(idPlano);
         String filename = reportService.buildFilename(idPlano, plano);
 
