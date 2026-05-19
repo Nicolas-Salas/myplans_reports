@@ -17,6 +17,10 @@ reports:
     uri: ${AUDIT_SERVICE_URI:http://localhost:8082}
     internal-token: ${AUDIT_INTERNAL_TOKEN:dev-internal-token-please-change-in-prod}
     timeout-ms: ${AUDIT_TIMEOUT_MS:5000}
+  auth:
+    uri: ${AUTH_SERVICE_URI:http://localhost:8090}
+    internal-token: ${AUTH_INTERNAL_TOKEN:dev-internal-token-please-change-in-prod}
+    timeout-ms: ${AUTH_TIMEOUT_MS:5000}
 
 springdoc:
   api-docs:
