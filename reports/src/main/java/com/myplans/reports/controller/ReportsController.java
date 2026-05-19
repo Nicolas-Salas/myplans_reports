@@ -48,3 +48,4 @@ public class ReportsController {
                 .body(new ByteArrayResource(xlsx));
     }
 }
+
