@@ -72,7 +72,7 @@ public class ExcelReportsGenerator {
 
             buildSheetPlanilla(wb, plano, tags, statusExport, observaciones, userNames,
                                headerStyle, dataStyle, grayStyle);
-            buildSheetHistorial(wb, tags, historialPorTag, headerStyle, dataStyle);
+            buildSheetHistorial(wb, tags, historialPorTag, userNames, headerStyle, dataStyle);
 
             wb.write(bos);
             return bos.toByteArray();
@@ -180,6 +180,7 @@ public class ExcelReportsGenerator {
 
     private void buildSheetHistorial(Workbook wb, List<TagDTO> tags,
                                      Map<Integer, List<HistorialDTO>> historialPorTag,
+                                     Map<Integer, String> userNames,
                                      CellStyle headerStyle, CellStyle dataStyle) {
         Sheet sheet = wb.createSheet("Historial");
 
@@ -205,7 +206,7 @@ public class ExcelReportsGenerator {
                 set(row, 0, String.valueOf(item++), dataStyle);
                 set(row, 1, safe(codigoPorTag.get(h.idTag())), dataStyle);
                 set(row, 2, h.fechaActualizado() == null ? "" : h.fechaActualizado().format(DATETIME_FMT), dataStyle);
-                set(row, 3, h.idUsuario() == null ? "" : String.valueOf(h.idUsuario()), dataStyle);
+                set(row, 3, h.idUsuario() == null ? "" : userNames.getOrDefault(h.idUsuario(), "Usuario " + h.idUsuario()), dataStyle);
                 set(row, 4, safe(h.estadoAnterior()), dataStyle);
                 set(row, 5, safe(h.estadoNuevo()), dataStyle);
                 set(row, 6, safe(h.observaciones()), dataStyle);
