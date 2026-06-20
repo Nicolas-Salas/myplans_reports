@@ -53,13 +53,16 @@ public class AuthClient {
         try {
             List<UserDTO> users = client()
                     .get()
-                    .uri("/api/admin/users")
+                    .uri("/api/admin/users/nombres")
                     .retrieve()
                     .body(new ParameterizedTypeReference<List<UserDTO>>() {});
             if (users == null) return Map.of();
             return users.stream()
-                    .filter(u -> u.idUsuario() != null)
-                    .collect(Collectors.toMap(UserDTO::idUsuario, UserDTO::nombreCompleto));
+                    .filter(u -> u.id() != null && u.nombre() != null)
+                    .collect(Collectors.toMap(
+                        u -> u.id().intValue(),
+                        UserDTO::nombre
+                    ));
         } catch (RestClientException ex) {
             log.warn("No se pudo obtener usuarios del Auth Service: {}", ex.getMessage());
             return Map.of();
